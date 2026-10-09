@@ -248,6 +248,7 @@ api.post('/register', rateLimit, (req, res) => {
     const c = checkName(label);
     if (!c.ok) return res.status(400).json({ error: c.reason });
     const wallet = String(b.wallet || '');
+    if (store.exists(label)) return res.status(409).json({ error: `${label}.${SUFFIX} is already registered.` });
     verifySig({ action: 'register', label, wallet, nonce: String(b.nonce || ''), signature: String(b.signature || '') });
     if (store.exists(label)) return res.status(409).json({ error: `${label}.${SUFFIX} was just taken.` });
     if (store.byOwner(wallet).length >= 100) return res.status(400).json({ error: 'This wallet already owns 100 names.' });
