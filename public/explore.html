@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explore names · Nomen</title>
+<meta name="description" content="Browse every .mint name in the Nomen registry.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<main>
+  <div class="container">
+    <div class="page-head">
+      <div><span class="eyebrow">The registry</span><h1 class="display">Explore names.</h1><p class="lead">Every .mint ever claimed. Search by name, ticker or token address.</p></div>
+      <div class="stats" id="stats">
+        <div class="stat"><div class="v" id="st-total">–</div><div class="k">Names</div></div>
+        <div class="stat"><div class="v" id="st-owners">–</div><div class="k">Owners</div></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input class="input" id="q" placeholder="Search names, tickers, addresses…" autocomplete="off" spellcheck="false">
+      <div class="tabs"><button class="active" data-f="all">All</button><button data-f="registered">Registered</button><button data-f="example">Examples</button></div>
+      <a class="btn primary sm" href="/launch" style="margin-left:auto">Claim a .mint</a>
+    </div>
+    <div class="grid" id="grid">
+      <div class="card skeleton"></div><div class="card skeleton"></div><div class="card skeleton"></div><div class="card skeleton"></div>
+    </div>
+    <div style="text-align:center;margin-top:28px"><button class="btn hidden" id="more">Load more</button></div>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+(function () {
+  const { $, $$, api, card } = Nomen;
+  let q = '', filter = 'all', offset = 0, all = [];
+  const PAGE = 48;
+  async function load(reset) {
+    if (reset) { offset = 0; all = []; }
+    const r = await api(`/names?limit=${PAGE}&offset=${offset}${q ? '&q=' + encodeURIComponent(q) : ''}`);
+    all = all.concat(r.names); offset += r.names.length;
+    $('#st-total').textContent = r.stats.total; $('#st-owners').textContent = r.stats.owners;
+    render(); $('#more').classList.toggle('hidden', r.names.length < PAGE);
+  }
+  function render() {
+    const list = all.filter(n => filter === 'all' ? true : filter === 'example' ? n.example : !n.example);
+    $('#grid').innerHTML = list.length ? list.map(card).join('') :
+      `<div class="empty" style="grid-column:1/-1"><h3>Nothing here yet.</h3><p>${q ? 'No names match that search.' : 'Be the first to claim a name.'}</p><a class="btn primary" href="/launch${q ? '?name=' + encodeURIComponent(q.replace(/[^a-z0-9-]/g,'')) : ''}">Claim a .mint</a></div>`;
+  }
+  let t; $('#q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); clearTimeout(t); t = setTimeout(() => load(true), 300); });
+  $$('.tabs button').forEach(b => b.addEventListener('click', () => { $$('.tabs button').forEach(x => x.classList.remove('active')); b.classList.add('active'); filter = b.dataset.f; render(); }));
+  $('#more').addEventListener('click', () => load(false));
+  const pq = new URLSearchParams(location.search).get('q'); if (pq) { q = pq; $('#q').value = pq; }
+  load(true).catch(() => { $('#grid').innerHTML = '<div class="muted">Could not load the registry.</div>'; });
+})();
+</script>
+</body>
+</html>

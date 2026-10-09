@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resolver API · Nomen</title>
+<meta name="description" content="Public HTTP API for resolving .mint names. CORS enabled, no key required.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .docs h3 { font-family: var(--display); font-weight: 600; font-size: 22px; margin: 36px 0 10px; }
+  .docs p { color: var(--text-2); max-width: 680px; }
+  .docs .code { margin: 12px 0; }
+  .ep { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px; margin: 10px 0 4px; }
+  .ep .m { padding: 3px 7px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 600; }
+  .ep .m.post { background: var(--gold-soft); color: var(--gold); }
+  table { border-collapse: collapse; width: 100%; max-width: 680px; font-size: 13px; }
+  td, th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+  td:first-child { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+</style>
+</head>
+<body>
+<main>
+  <div class="container docs">
+    <div class="page-head"><div><span class="eyebrow accent">&lt;/&gt; For the next layer</span><h1 class="display">Resolver API.</h1><p class="lead">A common language for wallets, bots, trading interfaces and communities. Public, open, CORS enabled. No key required.</p></div>
+      <a class="btn" href="/resolver">Open the in-app resolver</a></div>
+
+    <h3>Base URL</h3>
+    <div class="code"><pre><span class="k" id="base"></span>/api</pre></div>
+
+    <h3>Resolve a name</h3>
+    <div class="ep"><span class="m">GET</span>/api/resolve/:name</div>
+    <p>Accepts <span class="mono">milo</span> or <span class="mono">milo.mint</span>. Returns the full canonical record. Unregistered names return 404 with <span class="mono">available: true</span>.</p>
+    <div class="code"><div class="head"><span class="method">GET</span><span class="path">/api/resolve/milo.mint</span></div><pre id="ex-resolve">loading…</pre></div>
+
+    <h3>Reverse lookup</h3>
+    <div class="ep"><span class="m">GET</span>/api/resolve?mint=&lt;token address&gt;</div>
+    <p>Find every name pointing at a token address.</p>
+
+    <h3>Check availability</h3>
+    <div class="ep"><span class="m">GET</span>/api/check/:name</div>
+    <div class="code"><pre>{ "name": "milo.mint", "valid": true, "available": false, "reason": "Already registered.", "record": { … } }</pre></div>
+
+    <h3>List &amp; search</h3>
+    <div class="ep"><span class="m">GET</span>/api/names?q=&amp;owner=&amp;limit=&amp;offset=</div>
+    <p><span class="mono">q</span> matches name, ticker, token name or address. <span class="mono">owner</span> lists names owned by a wallet.</p>
+    <div class="ep"><span class="m">GET</span>/api/stats</div>
+
+    <h3>Register (wallet-signed)</h3>
+    <p>Registration needs no transaction and no fee. The owner proves control of a wallet by signing a plain-text message with ed25519 (what every Solana wallet's <span class="mono">signMessage</span> does).</p>
+    <div class="ep"><span class="m post">POST</span>/api/nonce  { wallet }</div>
+    <div class="ep"><span class="m post">POST</span>/api/message  { action, name, wallet, nonce }  → { message }</div>
+    <div class="ep"><span class="m post">POST</span>/api/register  { name, tokenName, ticker, description, image, mintKind, mint, links, wallet, nonce, signature }</div>
+    <div class="ep"><span class="m post">POST</span>/api/update  { name, description, links, image, wallet, nonce, signature }</div>
+    <div class="ep"><span class="m post">POST</span>/api/transfer  { name, to, wallet, nonce, signature }</div>
+    <p>The signature is the 64-byte detached ed25519 signature of the message bytes, base64 encoded. The message format is:</p>
+    <div class="code"><pre>Nomen — register milo.mint
+
+Wallet: &lt;base58 wallet address&gt;
+Nonce: &lt;nonce from /api/nonce&gt;
+
+No transaction. No fees. This signature only proves wallet ownership.</pre></div>
+
+    <h3>Record fields</h3>
+    <table><tr><th>Field</th><th>Meaning</th></tr>
+      <tr><td>name</td><td>Full name, e.g. milo.mint</td></tr>
+      <tr><td>label</td><td>Name without the suffix</td></tr>
+      <tr><td>ticker / tokenName</td><td>Locked at registration</td></tr>
+      <tr><td>mint</td><td>Solana token address this name points at</td></tr>
+      <tr><td>mintKind</td><td><span class="mono">existing</span> (format validated) or <span class="mono">example</span> (generated identifier, no token deployed)</td></tr>
+      <tr><td>owner / creator</td><td>Wallet that controls the record / wallet that registered it</td></tr>
+      <tr><td>links</td><td>twitter, telegram, website, pumpfun, community (nullable, editable by owner)</td></tr>
+      <tr><td>image</td><td>Data URL of the square token image, or null</td></tr>
+      <tr><td>example</td><td>True for the seeded demo records</td></tr>
+    </table>
+
+    <h3>Rules</h3>
+    <p>Names are 3–24 characters: lowercase letters, numbers and single hyphens, no hyphen at either end. Short and generic names such as ai.mint or sol.mint are reserved. Name, ticker and token address are immutable; everything else is editable by the owner. One wallet can hold up to 100 names. Names identify tokens inside Nomen, not the public DNS.</p>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+  document.getElementById('base').textContent = location.origin;
+  fetch('/api/resolve/milo.mint').then(r => r.json()).then(j => {
+    const s = JSON.stringify(j, null, 2).replace(/"image": "data:[^"]+"/, '"image": "data:image/webp;base64,…"');
+    document.getElementById('ex-resolve').innerHTML = Nomen.esc(s).replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:').replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>').replace(/: (null|true|false|\d+)/g, ': <span class="n">$1</span>');
+  }).catch(() => {});
+</script>
+</body>
+</html>

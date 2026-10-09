@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim a .mint · Nomen</title>
+<meta name="description" content="Give your token a canonical home. Claim ticker.mint in six steps, no fees.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<main>
+  <div class="container">
+    <div class="page-head">
+      <div><span class="eyebrow">A new name starts here</span><h1 class="display">Make it a <em>.mint.</em></h1><p class="lead">Your token's canonical home, one step at a time.</p></div>
+      <span class="mono small muted" id="progress">01 / 06</span>
+    </div>
+
+    <div class="wizard">
+      <aside>
+        <div class="wsteps" id="wsteps">
+          <div class="wstep" data-s="1"><span class="n">01</span><span class="lbl">Token</span></div>
+          <div class="wstep" data-s="2"><span class="n">02</span><span class="lbl">Your .mint</span></div>
+          <div class="wstep" data-s="3"><span class="n">03</span><span class="lbl">Token address</span></div>
+          <div class="wstep" data-s="4"><span class="n">04</span><span class="lbl">Links</span></div>
+          <div class="wstep" data-s="5"><span class="n">05</span><span class="lbl">Canonical record</span></div>
+          <div class="wstep" data-s="6"><span class="n">06</span><span class="lbl">Register</span></div>
+        </div>
+        <div class="wside-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <strong>Just an identity.</strong><strong>No transactions.</strong>
+          One wallet signature proves ownership. The record is saved to the public Nomen registry.
+        </div>
+      </aside>
+
+      <div class="wpanel" id="panel">
+        <!-- STEP 1 -->
+        <section data-step="1">
+          <div class="stepcap">Step 1</div><h2>First, meet your token.</h2><div class="sub">The face, name and story behind your .mint.</div>
+          <div class="upload">
+            <div class="prev" id="img-prev">?</div>
+            <label class="btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Upload token image<input type="file" id="img-file" accept="image/png,image/jpeg,image/webp" hidden></label>
+            <div class="hint">PNG, JPG, WebP · up to 2 MB<br>Optional. Square crop.</div>
+            <button class="btn ghost sm hidden" id="img-clear">Remove</button>
+          </div>
+          <div class="field-row">
+            <div class="f"><label>Token name</label><input class="input" id="tokenName" placeholder="Milo" maxlength="40"></div>
+            <div class="f"><label>Ticker</label><input class="input" id="ticker" placeholder="MILO" maxlength="12" style="text-transform:uppercase"></div>
+          </div>
+          <div class="f" style="margin-top:16px"><label>Description <span class="opt">Optional</span></label><textarea class="input" id="description" maxlength="500" placeholder="Every token has a story. What's yours?"></textarea><span class="counter"><span id="desc-count">0</span> / 500</span></div>
+          <div class="help err hidden" id="err1"></div>
+          <div class="wfoot"><span></span><button class="btn primary" data-next>Continue</button></div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section data-step="2" class="hidden">
+          <div class="stepcap">Step 2</div><h2>A small name. A big identity.</h2><div class="sub">Lowercase, memorable and easy to share.</div>
+          <div class="caps" style="margin-bottom:8px">Your .mint name</div>
+          <div class="bigname" id="bigname"><input id="label" placeholder="milo" maxlength="24" spellcheck="false" autocomplete="off"><span class="suf">.mint</span></div>
+          <div class="status-line"><span class="tag" id="name-tag">Check name</span><span class="muted" id="name-msg">Use 3–24 lowercase letters, numbers or hyphens. No hyphen at either end.</span></div>
+          <div class="note" style="margin-top:14px">3–24 characters. Letters, numbers and hyphens. Short names such as ai.mint are reserved.</div>
+          <div class="wfoot"><button class="btn ghost" data-back>Back</button><button class="btn primary" data-next id="next2" disabled>Continue</button></div>
+        </section>
+
+        <!-- STEP 3 -->
+        <section data-step="3" class="hidden">
+          <div class="stepcap">Step 3</div><h2>Give the name a destination.</h2><div class="sub">Choose an existing address or generate an example identifier.</div>
+          <div class="opts">
+            <label class="opt active" id="opt-example"><input type="radio" name="mintKind" value="example" checked><div><strong>Example address</strong><span>Generate an identifier for your record. No token is deployed.</span></div></label>
+            <label class="opt" id="opt-existing"><input type="radio" name="mintKind" value="existing"><div><strong>Existing token address</strong><span>Link an address you already have. Format validation only.</span></div></label>
+          </div>
+          <div id="example-box" class="note"><div class="caps" style="margin-bottom:6px">Example address</div><span class="mono small" id="example-mint"></span> <button class="btn ghost sm" id="regen" style="margin-left:8px;padding:3px 10px">Regenerate</button></div>
+          <div id="existing-box" class="f hidden"><label>Solana token address</label><input class="input mono" id="mint" placeholder="Paste the token mint address" spellcheck="false"><span class="help" id="mint-help">Base58, 32 bytes. We validate the format, not that the token exists.</span></div>
+          <div class="wfoot"><button class="btn ghost" data-back>Back</button><button class="btn primary" data-next>Continue</button></div>
+        </section>
+
+        <!-- STEP 4 -->
+        <section data-step="4" class="hidden">
+          <div class="stepcap">Step 4</div><h2>Connect the community.</h2><div class="sub">Add your links. Every field here is optional.</div>
+          <div class="field-row">
+            <div class="f"><label>X / Twitter <span class="opt">Optional</span></label><input class="input" id="l-twitter" placeholder="https://x.com/yourhandle"></div>
+            <div class="f"><label>Telegram <span class="opt">Optional</span></label><input class="input" id="l-telegram" placeholder="https://t.me/yourcommunity"></div>
+            <div class="f"><label>Website <span class="opt">Optional</span></label><input class="input" id="l-website" placeholder="https://your-site.com"></div>
+            <div class="f"><label>Pump.fun <span class="opt">Optional</span></label><input class="input" id="l-pumpfun" placeholder="https://pump.fun/coin/…"></div>
+          </div>
+          <div class="f" style="margin-top:16px;max-width:50%"><label>Community URL <span class="opt">Optional</span></label><input class="input" id="l-community" placeholder="https://…"></div>
+          <div class="help err hidden" id="err4"></div>
+          <div class="wfoot"><button class="btn ghost" data-back>Back</button><button class="btn primary" data-next>Continue</button></div>
+        </section>
+
+        <!-- STEP 5 -->
+        <section data-step="5" class="hidden">
+          <div class="stepcap">Step 5</div><h2>Your canonical record.</h2><div class="sub">This name will represent this token inside the Nomen naming layer.</div>
+          <div id="rec-head" style="display:flex;align-items:center;gap:14px;margin-bottom:14px"></div>
+          <div class="note">Owner and original creator will use your connected wallet at registration. This does not verify token creation.</div>
+          <div class="record">
+            <div class="rh"><span class="caps">🔒 Immutable origin data</span><span class="badge muted">Locked</span></div>
+            <div class="rb" id="rec-locked"></div>
+          </div>
+          <div class="record">
+            <div class="rh"><span class="caps">✎ Editable metadata</span><span class="badge muted">Editable later</span></div>
+            <div class="rb" id="rec-editable"></div>
+          </div>
+          <div class="wfoot"><button class="btn ghost" data-back>Back</button><button class="btn primary" data-next>Continue to registration</button></div>
+        </section>
+
+        <!-- STEP 6 -->
+        <section data-step="6" class="hidden">
+          <div id="register-view">
+            <div class="stepcap">Step 6</div><h2>Ready to make it yours?</h2><div class="sub">Sign one message to save your identity record. No fees or transactions.</div>
+            <div class="preview-card" id="preview"></div>
+            <div style="margin-top:14px">
+              <div class="kv"><span class="k">Owner</span><span class="v" id="reg-owner">Connect your wallet below</span></div>
+              <div class="kv"><span class="k">Registration fee</span><span class="v">No payment required</span></div>
+              <div class="kv"><span class="k">Proof</span><span class="v">One signed message (ed25519)</span></div>
+              <div class="kv"><span class="k">Storage</span><span class="v">Public Nomen registry</span></div>
+            </div>
+            <div class="note" style="margin-top:14px" id="reg-note">Your wallet signs a plain-text message. No on-chain transaction will occur.</div>
+            <div class="help err hidden" id="err6" style="margin-top:10px"></div>
+            <div class="wfoot"><button class="btn ghost" data-back>Back</button><button class="btn primary" id="register-btn">Connect wallet to register</button></div>
+          </div>
+          <div id="success-view" class="hidden"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script src="/js/launch.js"></script>
+</body>
+</html>

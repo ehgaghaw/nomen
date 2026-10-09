@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:type" content="profile">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<main>
+  <div class="container" style="max-width:760px">
+    <div class="page-head" style="padding-bottom:22px"><div><span class="eyebrow">Canonical identity</span><h1 class="display" id="title">{{LABEL}}<span class="accent" style="font-weight:500">.mint</span></h1></div></div>
+    <div id="root"><div class="card skeleton" style="min-height:300px"></div></div>
+    <div class="note" style="margin-top:22px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span>Resolve this name programmatically:</span><span class="mono accent copyable" id="api-link"></span>
+    </div>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+(function () {
+  const { $, $$, esc, api, avatar, nameHtml, short, fmtDateTime, copy, wallet } = Nomen;
+  const label = '{{LABEL}}';
+  $('#api-link').textContent = `${location.origin}/api/resolve/${label}.mint`;
+  $('#api-link').addEventListener('click', () => copy($('#api-link').textContent, 'API URL copied'));
+  (async () => {
+    try {
+      const r = await api('/resolve/' + encodeURIComponent(label));
+      const L = r.links;
+      const links = [['twitter', 'X / Twitter'], ['telegram', 'Telegram'], ['website', 'Website'], ['pumpfun', 'Pump.fun'], ['community', 'Community']].filter(([k]) => L[k]);
+      $('#root').innerHTML = `<div class="id-card fade-in"><div class="banner"><span class="ast">✳</span></div><div class="body">
+        ${avatar(r, 'xl')}
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+          <div><div class="nm">${nameHtml(r.label)}</div><div class="tn">$${esc(r.ticker)} · ${esc(r.tokenName)}</div></div>
+          <span class="badge ${r.example ? 'gold' : ''}">${r.example ? 'example record' : r.status}</span></div>
+        <div class="desc">${esc(r.description || 'No description yet.')}</div>
+        ${links.length ? `<div class="links">${links.map(([k, t]) => `<a href="${esc(L[k])}" target="_blank" rel="noopener">${t} ↗</a>`).join('')}</div>` : '<div class="tiny muted" style="margin:12px 0">No links added yet.</div>'}
+        <div class="kv"><span class="k">Token address</span><span class="v copyable" data-copy="${esc(r.mint)}">${esc(r.mint)}</span></div>
+        <div class="kv"><span class="k">Owner</span><span class="v copyable" data-copy="${esc(r.owner)}">${esc(r.owner)}</span></div>
+        <div class="kv"><span class="k">Original creator</span><span class="v">${esc(r.creator)}</span></div>
+        <div class="kv"><span class="k">Address kind</span><span class="v">${r.mintKind === 'existing' ? 'existing token (format validated)' : 'example identifier'}</span></div>
+        <div class="kv"><span class="k">Registered</span><span class="v">${fmtDateTime(r.createdAt)}</span></div>
+        <div class="kv"><span class="k">Updated</span><span class="v">${fmtDateTime(r.updatedAt)}</span></div>
+        <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary sm" data-copy="${location.href}">Copy link</button>
+          ${r.mintKind === 'existing' ? `<a class="btn sm" href="https://solscan.io/token/${esc(r.mint)}" target="_blank" rel="noopener">Solscan ↗</a><a class="btn sm" href="https://pump.fun/coin/${esc(r.mint)}" target="_blank" rel="noopener">Pump.fun ↗</a>` : ''}
+          <a class="btn sm ghost" href="/resolver?q=${esc(r.name)}">Open in resolver</a>
+          ${wallet.pubkey === r.owner ? '<a class="btn sm ghost" href="/names">Edit record</a>' : ''}
+        </div></div></div>`;
+      $$('[data-copy]').forEach(b => b.addEventListener('click', () => copy(b.dataset.copy)));
+      wallet.on(pk => { if (pk === r.owner && !$('#edit-link')) { const d = document.createElement('a'); d.id = 'edit-link'; d.className = 'btn sm ghost'; d.href = '/names'; d.textContent = 'Edit record'; $('.id-card .body > div:last-child').appendChild(d); } });
+    } catch (e) {
+      $('#root').innerHTML = `<div class="panel dashed"><div class="empty"><h3>${esc(label)}.mint is ${e.body?.available ? 'available' : 'not registered'}.</h3><p>${esc(e.message)}</p>
+        ${e.body?.available ? `<a class="btn primary" href="/launch?name=${encodeURIComponent(label)}">Claim ${esc(label)}.mint</a>` : '<a class="btn" href="/explore">Explore names</a>'}</div></div>`;
+    }
+  })();
+})();
+</script>
+</body>
+</html>

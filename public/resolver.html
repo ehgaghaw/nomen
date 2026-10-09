@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resolver · Nomen</title>
+<meta name="description" content="Resolve any .mint name to its token record, or look up a token address to find its name.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<main>
+  <div class="container">
+    <div class="page-head">
+      <div><span class="eyebrow accent">&lt;/&gt; Name → record</span><h1 class="display">Resolve a .mint.</h1><p class="lead">Type a name to get its canonical record. Paste a token address to find its name.</p></div>
+    </div>
+    <form class="search" id="form" autocomplete="off" style="margin:0 0 28px;max-width:none">
+      <div class="field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+        <input id="q" placeholder="milo.mint  or  a Solana token address" spellcheck="false">
+      </div>
+      <button class="btn primary" type="submit">Resolve</button>
+    </form>
+    <div class="resolver-split">
+      <div id="left"><div class="panel dashed"><div class="empty"><h3>Nothing resolved yet.</h3><p>Try <span class="chip" data-q="milo.mint">milo.mint</span> <span class="chip" data-q="agent">agent</span> <span class="chip" data-q="cat.mint">cat.mint</span></p></div></div></div>
+      <div class="code"><div class="head"><span class="method">GET</span><span class="path" id="path">/api/resolve/…</span><button class="btn ghost sm" id="copy-url" style="margin-left:auto;padding:4px 10px">Copy URL</button></div><pre id="out" class="c">// response will appear here</pre></div>
+    </div>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+(function () {
+  const { $, $$, esc, api, avatar, nameHtml, short, fmtDateTime, copy } = Nomen;
+  const q = $('#q');
+  function hl(json) {
+    return esc(JSON.stringify(json, null, 2))
+      .replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:')
+      .replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>')
+      .replace(/: (null|true|false|\d+)/g, ': <span class="n">$1</span>');
+  }
+  function idCard(r) {
+    const L = r.links; const links = [['twitter', 'X'], ['telegram', 'Telegram'], ['website', 'Website'], ['pumpfun', 'Pump.fun'], ['community', 'Community']].filter(([k]) => L[k]);
+    return `<div class="id-card fade-in"><div class="banner"><span class="ast">✳</span></div><div class="body">
+      ${avatar(r, 'lg')}
+      <div class="nm">${nameHtml(r.label)}</div>
+      <div class="tn">$${esc(r.ticker)} · ${esc(r.tokenName)} ${r.example ? '· <span class="gold">example record</span>' : ''}</div>
+      ${r.description ? `<div class="desc">${esc(r.description)}</div>` : ''}
+      ${links.length ? `<div class="links">${links.map(([k, t]) => `<a href="${esc(L[k])}" target="_blank" rel="noopener">${t} ↗</a>`).join('')}</div>` : ''}
+      <div class="kv"><span class="k">Token address</span><span class="v copyable" data-copy="${esc(r.mint)}" title="Copy">${esc(r.mint)}</span></div>
+      <div class="kv"><span class="k">Owner</span><span class="v copyable" data-copy="${esc(r.owner)}">${esc(r.owner)}</span></div>
+      <div class="kv"><span class="k">Creator</span><span class="v">${esc(r.creator)}</span></div>
+      <div class="kv"><span class="k">Address kind</span><span class="v">${r.mintKind === 'existing' ? 'existing token' : 'example identifier'}</span></div>
+      <div class="kv"><span class="k">Registered</span><span class="v">${fmtDateTime(r.createdAt)}</span></div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm" href="/n/${esc(r.label)}">Open identity page</a><button class="btn sm ghost" data-copy="${location.origin}/n/${esc(r.label)}">Copy link</button></div>
+    </div></div>`;
+  }
+  async function resolve(v) {
+    v = (v || '').trim(); if (!v) return;
+    history.replaceState(null, '', '?q=' + encodeURIComponent(v));
+    const isAddr = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(v) && !v.includes('.') && v.length > 24;
+    const path = isAddr ? `/api/resolve?mint=${v}` : `/api/resolve/${encodeURIComponent(v.toLowerCase())}`;
+    $('#path').textContent = path; $('#out').className = ''; $('#out').textContent = 'Resolving…';
+    try {
+      const r = await fetch(path); const j = await r.json();
+      $('#out').innerHTML = hl(j);
+      if (!r.ok) {
+        const label = v.toLowerCase().replace(/\.mint$/, '');
+        $('#left').innerHTML = `<div class="panel"><div class="empty"><h3>${esc(isAddr ? 'No name for that address.' : (label + '.mint'))}</h3>
+          <p>${esc(j.error)}</p>${j.available ? `<a class="btn primary" href="/launch?name=${encodeURIComponent(label)}">Claim ${esc(label)}.mint</a>` : (isAddr ? `<a class="btn primary" href="/launch?mint=${encodeURIComponent(v)}">Give it a name</a>` : '')}</div></div>`;
+        return;
+      }
+      if (isAddr) $('#left').innerHTML = j.names.map(idCard).join('');
+      else $('#left').innerHTML = idCard(j);
+      $$('[data-copy]').forEach(b => b.addEventListener('click', () => copy(b.dataset.copy)));
+    } catch (e) { $('#out').textContent = e.message; }
+  }
+  $('#form').addEventListener('submit', e => { e.preventDefault(); resolve(q.value); });
+  $$('.chip').forEach(c => c.addEventListener('click', () => { q.value = c.dataset.q; resolve(c.dataset.q); }));
+  $('#copy-url').addEventListener('click', () => copy(location.origin + $('#path').textContent, 'URL copied'));
+  const pq = new URLSearchParams(location.search).get('q'); if (pq) { q.value = pq; resolve(pq); }
+})();
+</script>
+</body>
+</html>

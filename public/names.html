@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My names · Nomen</title>
+<meta name="description" content="One wallet. All your token identities.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<main>
+  <div class="container">
+    <div class="page-head">
+      <div><span class="eyebrow">Your corner of the registry</span><h1 class="display">My names.</h1><p class="lead">One wallet. All your token identities.</p></div>
+      <a class="btn primary sm" href="/launch" id="claim-btn">Claim another .mint</a>
+    </div>
+
+    <div class="panel dashed" id="disconnected">
+      <div class="empty">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h5M3 10h18"/></svg>
+        <h3>Your names start here.</h3>
+        <p>Connect your wallet to see the records you own.</p>
+        <button class="btn primary" id="connect">Connect wallet</button>
+        <div class="tiny muted" style="margin-top:14px">Your wallet is used for identity only. Editing a record asks for one message signature. No payments.</div>
+      </div>
+    </div>
+
+    <div id="connected" class="hidden">
+      <div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px">
+        <span>Showing names owned by <span class="mono accent" id="owner"></span></span>
+        <button class="btn ghost sm" id="disconnect">Disconnect</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="edit-modal">
+    <div class="modal" style="max-width:520px">
+      <h3 id="edit-title">Edit record</h3>
+      <p>Links and description are editable. Name, ticker and token address are locked at registration.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="f"><label>Description <span class="opt">Optional</span></label><textarea class="input" id="e-desc" maxlength="500" style="min-height:70px"></textarea></div>
+        <div class="field-row">
+          <div class="f"><label>X / Twitter</label><input class="input" id="e-twitter" placeholder="https://x.com/yourhandle"></div>
+          <div class="f"><label>Telegram</label><input class="input" id="e-telegram" placeholder="https://t.me/yourcommunity"></div>
+          <div class="f"><label>Website</label><input class="input" id="e-website" placeholder="https://your-site.com"></div>
+          <div class="f"><label>Pump.fun</label><input class="input" id="e-pumpfun" placeholder="https://pump.fun/coin/…"></div>
+        </div>
+        <div class="f"><label>Community URL</label><input class="input" id="e-community" placeholder="https://…"></div>
+        <div class="help err hidden" id="e-err"></div>
+        <div class="wfoot" style="margin-top:6px"><button class="btn ghost" id="e-cancel">Cancel</button><button class="btn primary" id="e-save">Sign &amp; save</button></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+(function () {
+  const { $, $$, esc, api, wallet, toast, avatar, nameHtml, short, fmtDate, copy } = Nomen;
+  let names = [], editing = null;
+
+  function ownedCard(r) {
+    const origin = location.origin;
+    return `<div class="card fade-in">
+      <div class="top">${avatar(r)}<span class="badge">${esc(r.status)}</span></div>
+      <div><a href="/n/${esc(r.label)}" class="nm">${nameHtml(r.label)}</a><div class="tk">$${esc(r.ticker)} · ${esc(r.tokenName)}</div></div>
+      <div class="desc">${esc(r.description || 'No description yet.')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" data-edit="${esc(r.label)}">Edit links</button>
+        <button class="btn sm ghost" data-copy="${origin}/n/${esc(r.label)}">Copy link</button>
+        <a class="btn sm ghost" href="/n/${esc(r.label)}">View</a>
+      </div>
+      <div class="foot"><span>${short(r.mint)} · ${fmtDate(r.createdAt)}</span><span class="copyable" data-copy="${esc(r.mint)}" title="Copy token address">copy mint</span></div>
+    </div>`;
+  }
+
+  async function refresh(pk) {
+    $('#disconnected').classList.toggle('hidden', !!pk);
+    $('#connected').classList.toggle('hidden', !pk);
+    if (!pk) return;
+    $('#owner').textContent = pk;
+    $('#grid').innerHTML = '<div class="card skeleton"></div><div class="card skeleton"></div>';
+    try {
+      const r = await api('/names?owner=' + pk);
+      names = r.names;
+      $('#grid').innerHTML = names.length ? names.map(ownedCard).join('') :
+        `<div class="empty" style="grid-column:1/-1"><h3>No names yet.</h3><p>This wallet does not own any .mint names. Claim your first one.</p><a class="btn primary" href="/launch">Claim a .mint</a></div>`;
+      $$('[data-edit]').forEach(b => b.addEventListener('click', () => openEdit(b.dataset.edit)));
+      $$('[data-copy]').forEach(b => b.addEventListener('click', () => copy(b.dataset.copy)));
+    } catch (e) { $('#grid').innerHTML = `<div class="muted">${esc(e.message)}</div>`; }
+  }
+
+  function openEdit(label) {
+    editing = names.find(n => n.label === label); if (!editing) return;
+    $('#edit-title').textContent = `Edit ${editing.name}`;
+    $('#e-desc').value = editing.description || '';
+    for (const k of ['twitter', 'telegram', 'website', 'pumpfun', 'community']) $('#e-' + k).value = editing.links[k] || '';
+    $('#e-err').classList.add('hidden');
+    $('#edit-modal').classList.add('open');
+  }
+  $('#e-cancel').addEventListener('click', () => $('#edit-modal').classList.remove('open'));
+  $('#edit-modal').addEventListener('click', e => { if (e.target.id === 'edit-modal') $('#edit-modal').classList.remove('open'); });
+  $('#e-save').addEventListener('click', async () => {
+    const btn = $('#e-save'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Waiting for signature…';
+    $('#e-err').classList.add('hidden');
+    try {
+      const { nonce, signature } = await wallet.sign('update', editing.label);
+      const links = {}; for (const k of ['twitter', 'telegram', 'website', 'pumpfun', 'community']) links[k] = $('#e-' + k).value.trim() || null;
+      await api('/update', { name: editing.label, description: $('#e-desc').value, links, wallet: wallet.pubkey, nonce, signature });
+      toast('Record updated'); $('#edit-modal').classList.remove('open'); refresh(wallet.pubkey);
+    } catch (e) { $('#e-err').textContent = e.message; $('#e-err').classList.remove('hidden'); }
+    btn.disabled = false; btn.textContent = 'Sign & save';
+  });
+
+  $('#connect').addEventListener('click', () => wallet.connect().catch(e => toast(e.message || 'Connection rejected', true)));
+  $('#disconnect').addEventListener('click', () => wallet.disconnect());
+  wallet.on(refresh);
+  refresh(wallet.pubkey);
+})();
+</script>
+</body>
+</html>
