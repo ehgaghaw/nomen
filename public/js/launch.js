@@ -1,5 +1,5 @@
 (function () {
-  const { $, $$, esc, api, wallet, toast, avatar, nameHtml, short, copy } = Nomen;
+  const { $, $$, esc, api, wallet, toast, avatar, genLogo, nameHtml, short, copy, confetti } = Nomen;
 
   // ---------- tiny base58 (for example-address generation + format validation) ----------
   const ALPHA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -42,6 +42,7 @@
     $$('[data-step]').forEach(s => s.classList.toggle('hidden', +s.dataset.step !== n));
     $$('.wstep').forEach(w => { const k = +w.dataset.s; w.classList.toggle('active', k === n); w.classList.toggle('done', k < n); });
     $('#progress').textContent = `0${n} / 06`;
+    $('#wbar').style.width = (n / 6 * 100) + '%';
     if (n === 2) { $('#label').value = S.label; checkName(); }
     if (n === 3) renderStep3();
     if (n === 5) renderRecord();
@@ -83,10 +84,11 @@
   // ---------- step 1: image + fields ----------
   $('#tokenName').value = S.tokenName; $('#ticker').value = S.ticker; $('#description').value = S.description; $('#desc-count').textContent = S.description.length;
   $('#description').addEventListener('input', e => $('#desc-count').textContent = e.target.value.length);
-  $('#ticker').addEventListener('input', e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
+  $('#ticker').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); S.ticker = e.target.value; if (!S.image) renderImg(); });
+  $('#tokenName').addEventListener('input', e => { S.tokenName = e.target.value; if (!S.image) renderImg(); });
   function renderImg() {
     const p = $('#img-prev');
-    p.innerHTML = S.image ? `<img src="${S.image}" alt="">` : (S.ticker ? esc(S.ticker[0]) : '?');
+    p.innerHTML = S.image ? `<img src="${S.image}" alt="">` : ((S.ticker || S.tokenName) ? genLogo(S.label || S.ticker.toLowerCase() || S.tokenName.toLowerCase()) : '?');
     $('#img-clear').classList.toggle('hidden', !S.image);
   }
   renderImg();
@@ -182,7 +184,7 @@
         <div class="wfoot" style="justify-content:flex-start;gap:10px;flex-wrap:wrap"><a class="btn primary" href="/n/${esc(rec.label)}">View identity page</a><button class="btn" id="copy-link">Copy link</button><a class="btn ghost" href="/names">My names</a><a class="btn ghost" href="/launch" onclick="localStorage.removeItem('nomen.draft')">Register another</a></div>`;
       $('#copy-link').addEventListener('click', () => copy(url));
       $$('.wstep').forEach(w => w.classList.add('done')); $('.wstep[data-s="6"]').classList.add('active');
-      toast(`${rec.name} registered`);
+      toast(`${rec.name} registered`); confetti();
     } catch (e) {
       err('err6', e.message || 'Registration failed.');
     }

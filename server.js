@@ -140,12 +140,12 @@ function seed() {
   ];
   const ts = '2026-10-07T12:00:00.000Z';
   for (const e of examples) {
-    if (store.exists(e.name)) continue;
+    if (store.exists(e.name)) { store.db.prepare('UPDATE names SET image = ? WHERE name = ? AND example = 1 AND image IS NULL').run('/img/tokens/' + e.name + '.svg', e.name); continue; }
     const kp = nacl.sign.keyPair();
     store.insert({
       name: e.name, ticker: e.ticker, token_name: e.token_name, description: e.description || '',
       mint: bs58.encode(kp.publicKey), mint_kind: 'example', owner: EX_OWNER, creator: EX_OWNER,
-      image: null, twitter: null, telegram: null, website: e.website || null, pumpfun: null, community: null,
+      image: '/img/tokens/' + e.name + '.svg', twitter: null, telegram: null, website: e.website || null, pumpfun: null, community: null,
       status: 'active', example: 1, created_at: ts, updated_at: ts,
     });
   }

@@ -6,6 +6,7 @@
 <title>Explore names · Nomen</title>
 <meta name="description" content="Browse every .mint name in the Nomen registry.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script>document.documentElement.classList.add('js')</script>
 <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -39,12 +40,12 @@
     if (reset) { offset = 0; all = []; }
     const r = await api(`/names?limit=${PAGE}&offset=${offset}${q ? '&q=' + encodeURIComponent(q) : ''}`);
     all = all.concat(r.names); offset += r.names.length;
-    $('#st-total').textContent = r.stats.total; $('#st-owners').textContent = r.stats.owners;
+    if (!offset || offset === r.names.length) { Nomen.countUp($('#st-total'), r.stats.total); Nomen.countUp($('#st-owners'), r.stats.owners); }
     render(); $('#more').classList.toggle('hidden', r.names.length < PAGE);
   }
   function render() {
     const list = all.filter(n => filter === 'all' ? true : filter === 'example' ? n.example : !n.example);
-    $('#grid').innerHTML = list.length ? list.map(card).join('') :
+    $('#grid').innerHTML = list.length ? list.map((n, i) => card(n, i)).join('') :
       `<div class="empty" style="grid-column:1/-1"><h3>Nothing here yet.</h3><p>${q ? 'No names match that search.' : 'Be the first to claim a name.'}</p><a class="btn primary" href="/launch${q ? '?name=' + encodeURIComponent(q.replace(/[^a-z0-9-]/g,'')) : ''}">Claim a .mint</a></div>`;
   }
   let t; $('#q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); clearTimeout(t); t = setTimeout(() => load(true), 300); });
