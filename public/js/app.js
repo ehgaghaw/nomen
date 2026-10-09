@@ -2,7 +2,7 @@
 (function () {
   document.documentElement.classList.add('js');
   const SUFFIX = 'coin';
-  const X_HANDLE = 'nomenmint';
+  const X_HANDLE = 'nomenapp';
   const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---------- helpers ----------
