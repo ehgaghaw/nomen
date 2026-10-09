@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Resolver · Nomen</title>
-<meta name="description" content="Resolve any .mint name to its token record, or look up a token address to find its name.">
+<meta name="description" content="Resolve any .coin name to its token record, or look up a token address to find its name.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script>document.documentElement.classList.add('js')</script>
 <link rel="stylesheet" href="/css/style.css">
@@ -13,17 +13,17 @@
 <main>
   <div class="container">
     <div class="page-head">
-      <div><span class="eyebrow accent">&lt;/&gt; Name → record</span><h1 class="display">Resolve a .mint.</h1><p class="lead">Type a name to get its canonical record. Paste a token address to find its name.</p></div>
+      <div><span class="eyebrow accent">&lt;/&gt; Name → record</span><h1 class="display">Resolve a .coin.</h1><p class="lead">Type a name to get its canonical record. Paste a token address to find its name.</p></div>
     </div>
     <form class="search" id="form" autocomplete="off" style="margin:0 0 28px;max-width:none">
       <div class="field">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
-        <input id="q" placeholder="milo.mint  or  a Solana token address" spellcheck="false">
+        <input id="q" placeholder="milo.coin  or  a Solana token address" spellcheck="false">
       </div>
       <button class="btn primary" type="submit">Resolve</button>
     </form>
     <div class="resolver-split">
-      <div id="left"><div class="panel dashed"><div class="empty"><h3>Nothing resolved yet.</h3><p>Try <span class="chip" data-q="milo.mint">milo.mint</span> <span class="chip" data-q="agent">agent</span> <span class="chip" data-q="cat.mint">cat.mint</span></p></div></div></div>
+      <div id="left"><div class="panel dashed"><div class="empty"><h3>Nothing resolved yet.</h3><p>Try <span class="chip" data-q="milo.coin">milo.coin</span> <span class="chip" data-q="agent">agent</span> <span class="chip" data-q="cat.coin">cat.coin</span></p></div></div></div>
       <div class="code"><div class="head"><span class="method">GET</span><span class="path" id="path">/api/resolve/…</span><button class="btn ghost sm" id="copy-url" style="margin-left:auto;padding:4px 10px">Copy URL</button></div><pre id="out" class="c">// response will appear here</pre></div>
     </div>
   </div>
@@ -65,9 +65,9 @@
       const r = await fetch(path); const j = await r.json();
       $('#out').innerHTML = hl(j);
       if (!r.ok) {
-        const label = v.toLowerCase().replace(/\.mint$/, '');
-        $('#left').innerHTML = `<div class="panel"><div class="empty"><h3>${esc(isAddr ? 'No name for that address.' : (label + '.mint'))}</h3>
-          <p>${esc(j.error)}</p>${j.available ? `<a class="btn primary" href="/launch?name=${encodeURIComponent(label)}">Claim ${esc(label)}.mint</a>` : (isAddr ? `<a class="btn primary" href="/launch?mint=${encodeURIComponent(v)}">Give it a name</a>` : '')}</div></div>`;
+        const label = v.toLowerCase().replace(/\.coin$/, '');
+        $('#left').innerHTML = `<div class="panel"><div class="empty"><h3>${esc(isAddr ? 'No name for that address.' : (label + '.coin'))}</h3>
+          <p>${esc(j.error)}</p>${j.available ? `<a class="btn primary" href="/launch?name=${encodeURIComponent(label)}">Claim ${esc(label)}.coin</a>` : (isAddr ? `<a class="btn primary" href="/launch?mint=${encodeURIComponent(v)}">Give it a name</a>` : '')}</div></div>`;
         return;
       }
       if (isAddr) $('#left').innerHTML = j.names.map(idCard).join('');

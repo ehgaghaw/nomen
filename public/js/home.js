@@ -5,7 +5,7 @@
   const input = $('#hero-input'), result = $('#hero-result');
   let timer = null, typed = false;
   async function check(label, go) {
-    label = (label || '').trim().toLowerCase().replace(/\.mint$/, '');
+    label = (label || '').trim().toLowerCase().replace(/\.coin$/, '');
     if (!label) { result.textContent = ''; result.className = 'search-result'; return; }
     result.className = 'search-result'; result.textContent = 'Checking…';
     try {
@@ -83,7 +83,7 @@
     requestAnimationFrame(tick);
   }
   function stripItem(r) {
-    return `<a class="item" href="/n/${esc(r.label)}">${avatar(r, 'sm')}<span class="tk">$${esc(r.ticker)}</span><span class="arr">→</span><span class="nm">${esc(r.label)}<span>.mint</span></span><span class="ext">↗</span></a>`;
+    return `<a class="item" href="/n/${esc(r.label)}">${avatar(r, 'sm')}<span class="tk">$${esc(r.ticker)}</span><span class="arr">→</span><span class="nm">${esc(r.label)}<span>.coin</span></span><span class="ext">↗</span></a>`;
   }
   function jsonLines(rec) {
     const v = (x) => x == null ? '<span class="n">null</span>' : `<span class="s">"${esc(x)}"</span>`;
@@ -133,7 +133,7 @@
         scramble($('#ba-addr'), short(r.mint, 9));
         const nm = $('#ba-name');
         nm.classList.remove('flip'); void nm.offsetWidth; nm.classList.add('flip');
-        nm.innerHTML = `<span class="lg"><img src="${esc(logoSrc(r))}" alt=""></span><span>${esc(r.label)}<span class="sfx">.mint</span></span>`;
+        nm.innerHTML = `<span class="lg"><img src="${esc(logoSrc(r))}" alt=""></span><span>${esc(r.label)}<span class="sfx">.coin</span></span>`;
       };
       const stack = $('#stack');
       onReveal(stack, () => { show(); if (!REDUCED) setInterval(show, 3600); });

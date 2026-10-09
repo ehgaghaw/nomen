@@ -15,7 +15,7 @@
 <body>
 <main>
   <div class="container" style="max-width:760px">
-    <div class="page-head" style="padding-bottom:22px"><div><span class="eyebrow">Canonical identity</span><h1 class="display" id="title">{{LABEL}}<span class="accent" style="font-weight:500">.mint</span></h1></div></div>
+    <div class="page-head" style="padding-bottom:22px"><div><span class="eyebrow">Canonical identity</span><h1 class="display" id="title">{{LABEL}}<span class="accent" style="font-weight:500">.coin</span></h1></div></div>
     <div id="root"><div class="card skeleton" style="min-height:300px"></div></div>
     <div class="note" style="margin-top:22px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <span>Resolve this name programmatically:</span><span class="mono accent copyable" id="api-link"></span>
@@ -27,7 +27,7 @@
 (function () {
   const { $, $$, esc, api, avatar, nameHtml, short, fmtDateTime, copy, wallet } = Nomen;
   const label = '{{LABEL}}';
-  $('#api-link').textContent = `${location.origin}/api/resolve/${label}.mint`;
+  $('#api-link').textContent = `${location.origin}/api/resolve/${label}.coin`;
   $('#api-link').addEventListener('click', () => copy($('#api-link').textContent, 'API URL copied'));
   (async () => {
     try {
@@ -56,8 +56,8 @@
       $$('[data-copy]').forEach(b => b.addEventListener('click', () => copy(b.dataset.copy)));
       wallet.on(pk => { if (pk === r.owner && !$('#edit-link')) { const d = document.createElement('a'); d.id = 'edit-link'; d.className = 'btn sm ghost'; d.href = '/names'; d.textContent = 'Edit record'; $('.id-card .body > div:last-child').appendChild(d); } });
     } catch (e) {
-      $('#root').innerHTML = `<div class="panel dashed"><div class="empty"><h3>${esc(label)}.mint is ${e.body?.available ? 'available' : 'not registered'}.</h3><p>${esc(e.message)}</p>
-        ${e.body?.available ? `<a class="btn primary" href="/launch?name=${encodeURIComponent(label)}">Claim ${esc(label)}.mint</a>` : '<a class="btn" href="/explore">Explore names</a>'}</div></div>`;
+      $('#root').innerHTML = `<div class="panel dashed"><div class="empty"><h3>${esc(label)}.coin is ${e.body?.available ? 'available' : 'not registered'}.</h3><p>${esc(e.message)}</p>
+        ${e.body?.available ? `<a class="btn primary" href="/launch?name=${encodeURIComponent(label)}">Claim ${esc(label)}.coin</a>` : '<a class="btn" href="/explore">Explore names</a>'}</div></div>`;
     }
   })();
 })();

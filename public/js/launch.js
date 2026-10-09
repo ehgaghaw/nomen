@@ -32,7 +32,7 @@
   let S = { step: 1, image: null, tokenName: '', ticker: '', description: '', label: '', nameOk: false, mintKind: 'example', mint: '', exampleMint: randomMint(), links: {} };
   try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && d.v === 1) S = { ...S, ...d.s, step: 1, nameOk: false }; } catch {}
   const params = new URLSearchParams(location.search);
-  if (params.get('name')) { S.label = params.get('name').toLowerCase().replace(/\.mint$/, '').replace(/[^a-z0-9-]/g, ''); if (!S.ticker) S.ticker = S.label.replace(/-/g, '').slice(0, 12).toUpperCase(); if (!S.tokenName) S.tokenName = S.label.charAt(0).toUpperCase() + S.label.slice(1); }
+  if (params.get('name')) { S.label = params.get('name').toLowerCase().replace(/\.coin$/, '').replace(/[^a-z0-9-]/g, ''); if (!S.ticker) S.ticker = S.label.replace(/-/g, '').slice(0, 12).toUpperCase(); if (!S.tokenName) S.tokenName = S.label.charAt(0).toUpperCase() + S.label.slice(1); }
   if (params.get('mint') && isPubkey(params.get('mint'))) { S.mintKind = 'existing'; S.mint = params.get('mint'); }
   function save() { try { const { step, nameOk, ...rest } = S; localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 1, s: rest })); } catch {} }
 

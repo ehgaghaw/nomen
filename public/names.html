@@ -14,7 +14,7 @@
   <div class="container">
     <div class="page-head">
       <div><span class="eyebrow">Your corner of the registry</span><h1 class="display">My names.</h1><p class="lead">One wallet. All your token identities.</p></div>
-      <a class="btn primary sm" href="/launch" id="claim-btn">Claim another .mint</a>
+      <a class="btn primary sm" href="/launch" id="claim-btn">Claim another .coin</a>
     </div>
 
     <div class="panel dashed" id="disconnected">
@@ -86,7 +86,7 @@
       const r = await api('/names?owner=' + pk);
       names = r.names;
       $('#grid').innerHTML = names.length ? names.map(ownedCard).join('') :
-        `<div class="empty" style="grid-column:1/-1"><h3>No names yet.</h3><p>This wallet does not own any .mint names. Claim your first one.</p><a class="btn primary" href="/launch">Claim a .mint</a></div>`;
+        `<div class="empty" style="grid-column:1/-1"><h3>No names yet.</h3><p>This wallet does not own any .coin names. Claim your first one.</p><a class="btn primary" href="/launch">Claim a .coin</a></div>`;
       $$('[data-edit]').forEach(b => b.addEventListener('click', () => openEdit(b.dataset.edit)));
       $$('[data-copy]').forEach(b => b.addEventListener('click', () => copy(b.dataset.copy)));
     } catch (e) { $('#grid').innerHTML = `<div class="muted">${esc(e.message)}</div>`; }

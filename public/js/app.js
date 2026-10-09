@@ -1,7 +1,7 @@
 /* Nomen — shared client runtime: nav, footer, wallet, API, logos, motion. */
 (function () {
   document.documentElement.classList.add('js');
-  const SUFFIX = 'mint';
+  const SUFFIX = 'coin';
   const X_HANDLE = 'nomenmint';
   const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 

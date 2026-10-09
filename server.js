@@ -8,7 +8,7 @@ const bs58 = require('bs58').default || require('bs58');
 const store = require('./db');
 
 const PORT = process.env.PORT || 3000;
-const SUFFIX = 'mint';
+const SUFFIX = 'coin';
 const SITE_NAME = 'Nomen';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const app = express();
@@ -19,7 +19,7 @@ app.use(express.json({ limit: '600kb' }));
 // ---------- helpers ----------
 const NAME_RE = /^[a-z0-9](?:[a-z0-9-]{1,22}[a-z0-9])$/;
 const RESERVED = new Set([
-  'mint', 'nomen', 'api', 'www', 'admin', 'root', 'sol', 'solana', 'ai', 'btc', 'eth', 'usdc', 'usdt',
+  'mint', 'coin', 'nomen', 'api', 'www', 'admin', 'root', 'sol', 'solana', 'ai', 'btc', 'eth', 'usdc', 'usdt',
   'pump', 'pumpfun', 'raydium', 'jupiter', 'phantom', 'solflare', 'name', 'names', 'resolve', 'resolver',
   'explore', 'launch', 'app', 'help', 'support', 'null', 'undefined', 'test', 'official', 'team',
 ]);
@@ -167,7 +167,7 @@ api.get('/', (req, res) => {
   res.json({
     service: SITE_NAME, suffix: '.' + SUFFIX, version: 1,
     endpoints: {
-      resolve: 'GET /api/resolve/:name  (name with or without .mint)',
+      resolve: 'GET /api/resolve/:name  (name with or without .coin)',
       reverse: 'GET /api/resolve?mint=<token address>',
       check: 'GET /api/check/:name',
       names: 'GET /api/names?q=&owner=&limit=&offset=',
@@ -336,11 +336,11 @@ for (const [route, file] of Object.entries(pages)) {
 
 const NAME_TPL = fs.readFileSync(path.join(PUBLIC_DIR, 'name.html'), 'utf8');
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-app.get(['/n/:name', '/:name.mint'], (req, res) => {
+app.get(['/n/:name', '/:name.coin'], (req, res) => {
   const label = normalizeName(req.params.name);
   const rec = checkName(label).ok ? store.get(label) : null;
-  const title = rec ? `${rec.name} · $${rec.ticker} · ${SITE_NAME}` : `${label ? label + '.mint' : 'Name'} · ${SITE_NAME}`;
-  const desc = rec ? (rec.description || `${rec.tokenName} ($${rec.ticker}) on Solana. Canonical record on ${SITE_NAME}.`) : `This .mint name is available on ${SITE_NAME}.`;
+  const title = rec ? `${rec.name} · $${rec.ticker} · ${SITE_NAME}` : `${label ? label + '.coin' : 'Name'} · ${SITE_NAME}`;
+  const desc = rec ? (rec.description || `${rec.tokenName} ($${rec.ticker}) on Solana. Canonical record on ${SITE_NAME}.`) : `This .coin name is available on ${SITE_NAME}.`;
   const html = NAME_TPL.replace(/{{TITLE}}/g, esc(title)).replace(/{{DESC}}/g, esc(desc)).replace(/{{LABEL}}/g, esc(label || ''));
   res.set('Content-Type', 'text/html; charset=utf-8').send(html);
 });

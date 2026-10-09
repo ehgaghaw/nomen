@@ -79,7 +79,7 @@ const stmts = {
 function rowToRecord(r) {
   if (!r) return null;
   return {
-    name: r.name + '.mint',
+    name: r.name + '.coin',
     label: r.name,
     ticker: r.ticker,
     tokenName: r.token_name,
